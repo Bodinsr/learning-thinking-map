@@ -16,6 +16,8 @@ const [phase, setPhase] = useState("pre");
 
 const [activeStudents, setActiveStudents] =
   useState([]);
+const [initialized, setInitialized] =
+  useState(false);
   const [idea, setIdea] = useState("");
  const [students, setStudents] = useState(() => {
   const saved = localStorage.getItem("students");
@@ -36,6 +38,12 @@ const resetActivity = () => {
   setPhase("pre");
   setScreen("setup");
 };
+useEffect(() => {
+  if (!initialized) {
+    setSelectedStudents(students);
+    setInitialized(true);
+  }
+}, [students, initialized]);
   useEffect(() => {
   localStorage.setItem(
     "students",
@@ -43,9 +51,7 @@ const resetActivity = () => {
   );
 }, [students]);
 
-useEffect(() => {
-  setSelectedStudents(students);
-}, [students]);
+
   const addIdea = () => {
     if (idea.trim() === "") return;
 
