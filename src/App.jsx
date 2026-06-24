@@ -11,20 +11,18 @@ function App() {
   const [screen, setScreen] = useState("setup");
 const [phase, setPhase] = useState("pre");
   const [question, setQuestion] = useState("");
+  const [selectedStudents, setSelectedStudents] =
+  useState([]);
 
+const [activeStudents, setActiveStudents] =
+  useState([]);
   const [idea, setIdea] = useState("");
-  const [students, setStudents] = useState(() => {
+ const [students, setStudents] = useState(() => {
   const saved = localStorage.getItem("students");
 
   return saved
     ? JSON.parse(saved)
-    : [
-        "ก้อง",
-        "กาย",
-        "ปัน",
-        "น้ำ",
-        "ใบเฟิร์น",
-      ];
+    : ["ก้อง", "กาย", "ปัน", "น้ำ", "ใบเฟิร์น"];
 });
 
   const [ideas, setIdeas] = useState([]);
@@ -43,6 +41,10 @@ const resetActivity = () => {
     "students",
     JSON.stringify(students)
   );
+}, [students]);
+
+useEffect(() => {
+  setSelectedStudents(students);
 }, [students]);
   const addIdea = () => {
     if (idea.trim() === "") return;
@@ -71,7 +73,7 @@ if (screen === "students") {
 if (screen === "student") {
   return (
     <StudentScreen
-      students={students}
+      students={activeStudents}
       ideas={ideas}
       responses={responses}
       setResponses={setResponses}
@@ -85,7 +87,7 @@ setPostResponses={setPostResponses}
 if (screen === "compare") {
   return (
     <CompareScreen
-      students={students}
+      students={activeStudents}
       responses={responses}
       postResponses={postResponses}
       setScreen={setScreen}
@@ -110,6 +112,9 @@ if (screen === "results") {
   setScreen={setScreen}
   students={students}
   setStudents={setStudents}
+  selectedStudents={selectedStudents}
+  setSelectedStudents={setSelectedStudents}
+  setActiveStudents={setActiveStudents}
 />
     );
   }
@@ -124,7 +129,7 @@ if (screen === "results") {
         addIdea={addIdea}
         deleteIdea={deleteIdea}
 setScreen={setScreen}
-students={students}
+students={activeStudents}
 responses={responses}
 phase={phase}
 postResponses={postResponses}

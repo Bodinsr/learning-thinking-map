@@ -13,7 +13,24 @@ postResponses,
 }) {
   return (
     <div style={{ padding: "30px" }}>
-      <h1>{question}</h1>
+      <div
+  style={{
+    backgroundColor: "#f5f5f5",
+    padding: "20px",
+    borderRadius: "12px",
+    marginBottom: "20px",
+  }}
+>
+  <h1
+    style={{
+      margin: 0,
+      lineHeight: "1.5",
+      wordBreak: "break-word",
+    }}
+  >
+    {question}
+  </h1>
+</div>
 <h2>
   {phase === "pre"
     ? "📘 รอบก่อนเรียน"

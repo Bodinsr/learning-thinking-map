@@ -3,6 +3,9 @@ function SetupScreen({
   setQuestion,
   setScreen,
   students,
+  selectedStudents,
+  setSelectedStudents,
+  setActiveStudents,
 }) {
   return (
     <div style={{ padding: "30px" }}>
@@ -35,26 +38,41 @@ function SetupScreen({
   จัดการรายชื่อ
 </button>
       <div>
-  {students.map((student) => (
-    <div key={student}>
-      <label>
-        <input type="checkbox" checked readOnly />
-        {student}
-      </label>
-    </div>
-  ))}
-</div>
-
-      <button
-        onClick={() => setScreen("brainstorm")}
-        style={{
-          marginTop: "30px",
-          padding: "15px 30px",
-          fontSize: "20px",
+{students.map((student) => (
+  <div key={student}>
+    <label>
+      <input
+        type="checkbox"
+        checked={selectedStudents.includes(student)}
+        onChange={() => {
+          if (selectedStudents.includes(student)) {
+            setSelectedStudents(
+              selectedStudents.filter(
+                (s) => s !== student
+              )
+            );
+          } else {
+            setSelectedStudents([
+              ...selectedStudents,
+              student,
+            ]);
+          }
         }}
-      >
-        เริ่มกิจกรรม
-      </button>
+      />
+      {student}
+    </label>
+  </div>
+))}
+
+<button
+  onClick={() => {
+    setActiveStudents(selectedStudents);
+    setScreen("brainstorm");
+  }}
+>
+  เริ่มกิจกรรม
+</button>
+      </div>
     </div>
   );
 }
