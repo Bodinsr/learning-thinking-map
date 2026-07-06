@@ -13,8 +13,8 @@ setPostResponses,
   const [selectedStudent, setSelectedStudent] =
     useState(null);
 
-  const [selectedIdea, setSelectedIdea] =
-    useState("");
+  const [selectedIdeas, setSelectedIdeas] =
+  useState([]);
 
   const currentResponses =
   phase === "pre"
@@ -31,15 +31,15 @@ const availableStudents =
 
   const submitAnswer = () => {
   if (!selectedStudent) return;
-  if (!selectedIdea) return;
+  if (selectedIdeas.length === 0) return;
 
   if (phase === "pre") {
     const newResponses = [
       ...responses,
       {
-        student: selectedStudent,
-        idea: selectedIdea,
-      },
+  student: selectedStudent,
+  ideas: selectedIdeas,
+},
     ];
 
     setResponses(newResponses);
@@ -56,9 +56,9 @@ const availableStudents =
     const newPostResponses = [
       ...postResponses,
       {
-        student: selectedStudent,
-        idea: selectedIdea,
-      },
+  student: selectedStudent,
+  ideas: selectedIdeas,
+},
     ];
 
     setPostResponses(newPostResponses);
@@ -75,7 +75,7 @@ const availableStudents =
   }
 
   setSelectedStudent(null);
-  setSelectedIdea("");
+setSelectedIdeas([]);
 };
 
   if (!selectedStudent) {
@@ -128,19 +128,38 @@ const availableStudents =
       >
         {ideas.map((idea) => (
           <button
-            key={idea}
-            onClick={() =>
-              setSelectedIdea(idea)
-            }
-            style={{
-              padding: "20px",
-              fontSize: "24px",
-              border:
-                selectedIdea === idea
-                  ? "4px solid green"
-                  : "1px solid gray",
-            }}
-          >
+  key={idea}
+  onClick={() => {
+    if (selectedIdeas.includes(idea)) {
+      setSelectedIdeas(
+        selectedIdeas.filter(
+          (item) => item !== idea
+        )
+      );
+    } else {
+      setSelectedIdeas([
+        ...selectedIdeas,
+        idea,
+      ]);
+    }
+  }}
+  style={{
+    padding: "20px",
+    fontSize: "24px",
+    backgroundColor: selectedIdeas.includes(idea)
+      ? "#4CAF50"
+      : "white",
+    color: selectedIdeas.includes(idea)
+      ? "white"
+      : "black",
+    border: selectedIdeas.includes(idea)
+      ? "3px solid #2E7D32"
+      : "1px solid gray",
+    borderRadius: "12px",
+    cursor: "pointer",
+    transition: "0.2s",
+  }}
+>
             {idea}
           </button>
         ))}
