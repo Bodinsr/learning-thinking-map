@@ -41,14 +41,13 @@ function ResultsScreen({
 
       <button
         onClick={() => {
-          setPhase("post");
-          setScreen("brainstorm");
+          setScreen("learningActivity");
         }}
         style={{
           marginLeft: "10px",
         }}
       >
-        เริ่มรอบหลังเรียน
+        เริ่มกิจกรรมการเรียนรู้
       </button>
     </div>
   );

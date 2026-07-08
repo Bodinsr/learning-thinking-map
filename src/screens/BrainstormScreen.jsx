@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+
+import Timer from "../components/Timer";
+
 function BrainstormScreen({
   question,
   idea,
@@ -5,63 +9,74 @@ function BrainstormScreen({
   ideas,
   addIdea,
   deleteIdea,
-setScreen,
-students,
-responses,
-phase,
-postResponses,
+  setScreen,
+  students,
+  responses,
+  phase,
+  postResponses,
+  timerConfig,
 }) {
+  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
+
+  const handleTimerComplete = () => {
+    setShowTimeoutModal(true);
+  };
+
   return (
     <div style={{ padding: "30px" }}>
       <div
-  style={{
-    backgroundColor: "#f5f5f5",
-    padding: "20px",
-    borderRadius: "12px",
-    marginBottom: "20px",
-  }}
->
-  <h1
-    style={{
-      margin: 0,
-      lineHeight: "1.5",
-      wordBreak: "break-word",
-    }}
-  >
-    {question}
-  </h1>
-</div>
-<h2>
-  {phase === "pre"
-    ? "📘 รอบก่อนเรียน"
-    : "📗 รอบหลังเรียน"}
-</h2>
-<h3>
-  ตอบแล้ว {responses.length} / {students.length} คน
-</h3>
-{responses.length === students.length && (
-  <button
-    onClick={() => setScreen("results")}
-    style={{
-      padding: "12px 20px",
-      marginBottom: "20px",
-    }}
-  >
-    📊 แสดงผลสำรวจความคิด
-  </button>
-)}
+        style={{
+          backgroundColor: "#f5f5f5",
+          padding: "20px",
+          borderRadius: "12px",
+          marginBottom: "20px",
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            lineHeight: "1.5",
+            wordBreak: "break-word",
+          }}
+        >
+          {question}
+        </h1>
+      </div>
 
-{phase === "post" &&
-  postResponses.length === students.length && (
-    <button
-      onClick={() => setScreen("compare")}
-      style={{
-        marginLeft: "10px",
-      }}
-    >
-      🔄 เปรียบเทียบก่อน-หลัง
-    </button>
-)}
+      {timerConfig?.enabled && (
+        <Timer
+          initialMinutes={timerConfig.minutes}
+          enabled={timerConfig.enabled}
+          onComplete={handleTimerComplete}
+        />
+      )}
+
+      <h2>{phase === "pre" ? "📘 รอบก่อนเรียน" : "📗 รอบหลังเรียน"}</h2>
+      <h3>
+        ตอบแล้ว {responses.length} / {students.length} คน
+      </h3>
+      {responses.length === students.length && (
+        <button
+          onClick={() => setScreen("results")}
+          style={{
+            padding: "12px 20px",
+            marginBottom: "20px",
+          }}
+        >
+          📊 แสดงผลสำรวจความคิด
+        </button>
+      )}
+
+      {phase === "post" && postResponses.length === students.length && (
+        <button
+          onClick={() => setScreen("compare")}
+          style={{
+            marginLeft: "10px",
+          }}
+        >
+          🔄 เปรียบเทียบก่อน-หลัง
+        </button>
+      )}
       <h2>แนวคิดของห้องเรา</h2>
 
       <input
@@ -90,15 +105,15 @@ postResponses,
       >
         เพิ่มแนวคิด
       </button>
-<button
-  onClick={() => setScreen("student")}
-  style={{
-    marginLeft: "10px",
-    padding: "12px 20px",
-  }}
->
-  เปิดหน้านักเรียน
-</button>
+      <button
+        onClick={() => setScreen("student")}
+        style={{
+          marginLeft: "10px",
+          padding: "12px 20px",
+        }}
+      >
+        เปิดหน้านักเรียน
+      </button>
       <div
         style={{
           marginTop: "30px",
@@ -140,6 +155,34 @@ postResponses,
           </div>
         ))}
       </div>
+
+      {showTimeoutModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.35)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "24px",
+              borderRadius: "12px",
+              width: "100%",
+              maxWidth: "360px",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ marginBottom: "12px" }}>หมดเวลาระดมความคิด</h2>
+            <button onClick={() => setShowTimeoutModal(false)}>OK</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

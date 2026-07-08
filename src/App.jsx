@@ -6,45 +6,54 @@ import ManageStudentsScreen from "./screens/ManageStudentsScreen";
 import StudentScreen from "./screens/StudentScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import CompareScreen from "./screens/CompareScreen";
+import LearningActivityScreen from "./screens/LearningActivityScreen";
+import {
+  ACTIVITY_STORAGE_KEY,
+  LEGACY_ACTIVITY_STORAGE_KEY,
+  DEFAULT_STUDENTS,
+  clearSavedActivity,
+  formatThaiDateTime,
+  hasMeaningfulActivity,
+  saveActivity,
+} from "./utils/activityStorage";
+import { LEGACY_TIMER_KEYS, TIMER_KEYS } from "./utils/timerStorage";
 
-const ACTIVITY_STORAGE_KEY = "learning-thinking-map-activity";
-const LEGACY_ACTIVITY_STORAGE_KEY = "learning-thinking-map-session";
-const DEFAULT_STUDENTS = ["ก้อง", "กาย", "ปัน", "น้ำ", "ใบเฟิร์น"];
+const defaultTimerConfig = () => ({ enabled: false, minutes: 5 });
 
-const hasMeaningfulActivity = (activity = {}) => {
-  const studentsList = activity.students ?? DEFAULT_STUDENTS;
-  const hasCustomStudents = studentsList.some(
-    (student, index) => student !== DEFAULT_STUDENTS[index]
-  );
-
-  return (
-    (activity.question ?? "").trim() !== "" ||
-    (activity.selectedStudents ?? []).length > 0 ||
-    (activity.activeStudents ?? []).length > 0 ||
-    (activity.ideas ?? []).length > 0 ||
-    (activity.responses ?? []).length > 0 ||
-    (activity.postResponses ?? []).length > 0 ||
-    (activity.phase ?? "pre") !== "pre" ||
-    (activity.screen ?? "setup") !== "setup" ||
-    hasCustomStudents
-  );
-};
-
-const formatThaiDateTime = (value) => {
-  if (!value) {
-    return "—";
+const readTimerConfig = (storageKey, legacyStorageKey) => {
+  if (typeof window === "undefined") {
+    return defaultTimerConfig();
   }
 
-  const date = new Date(value);
+  const saved = window.localStorage.getItem(storageKey);
 
-  if (Number.isNaN(date.getTime())) {
-    return "—";
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      return {
+        enabled: parsed.enabled ?? false,
+        minutes: parsed.minutes ?? 5,
+      };
+    } catch (error) {
+      return defaultTimerConfig();
+    }
   }
 
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "long",
-    timeStyle: "short",
-  }).format(date);
+  const legacySaved = window.localStorage.getItem(legacyStorageKey);
+
+  if (!legacySaved) {
+    return defaultTimerConfig();
+  }
+
+  try {
+    const parsed = JSON.parse(legacySaved);
+    return {
+      enabled: parsed.enabled ?? false,
+      minutes: parsed.minutes ?? 5,
+    };
+  } catch (error) {
+    return defaultTimerConfig();
+  }
 };
 
 function App() {
@@ -70,6 +79,15 @@ function App() {
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
   const [savedActivityPreview, setSavedActivityPreview] = useState(null);
+  const [preTimerConfig, setPreTimerConfig] = useState(() =>
+    readTimerConfig(TIMER_KEYS.pre, LEGACY_TIMER_KEYS.pre)
+  );
+  const [postTimerConfig, setPostTimerConfig] = useState(() =>
+    readTimerConfig(TIMER_KEYS.post, LEGACY_TIMER_KEYS.post)
+  );
+  const [learningTimerConfig, setLearningTimerConfig] = useState(() =>
+    readTimerConfig(TIMER_KEYS.learning, LEGACY_TIMER_KEYS.learning)
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -116,6 +134,33 @@ function App() {
   }, [students]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(TIMER_KEYS.pre, JSON.stringify(preTimerConfig));
+  }, [preTimerConfig]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(TIMER_KEYS.post, JSON.stringify(postTimerConfig));
+  }, [postTimerConfig]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      TIMER_KEYS.learning,
+      JSON.stringify(learningTimerConfig)
+    );
+  }, [learningTimerConfig]);
+
+  useEffect(() => {
     if (!hasCheckedStorage || showRestoreDialog || !initialized) {
       return;
     }
@@ -157,27 +202,6 @@ function App() {
     phase,
     screen,
   ]);
-
-  const clearSavedActivity = () => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    window.localStorage.removeItem(ACTIVITY_STORAGE_KEY);
-    window.localStorage.removeItem(LEGACY_ACTIVITY_STORAGE_KEY);
-  };
-
-  const saveActivity = (activityData) => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    window.localStorage.setItem(
-      ACTIVITY_STORAGE_KEY,
-      JSON.stringify(activityData)
-    );
-    window.localStorage.removeItem(LEGACY_ACTIVITY_STORAGE_KEY);
-  };
 
   const resetActivity = () => {
     setQuestion("");
@@ -360,6 +384,17 @@ function App() {
     );
   }
 
+  if (screen === "learningActivity") {
+    return (
+      <LearningActivityScreen
+        setScreen={setScreen}
+        setPhase={setPhase}
+        timerConfig={learningTimerConfig}
+        onTimerConfigChange={setLearningTimerConfig}
+      />
+    );
+  }
+
   if (screen === "setup") {
     return (
       <SetupScreen
@@ -389,6 +424,7 @@ function App() {
         responses={responses}
         phase={phase}
         postResponses={postResponses}
+        timerConfig={phase === "post" ? postTimerConfig : preTimerConfig}
       />
     );
   }
